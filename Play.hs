@@ -14,7 +14,7 @@ type TournammentState = (Int,Int,Int)   -- wins, losses, ties
 
 --function to print our shit
 printArray arr =
-  unlines [unwords [show (arr !! x !! y) | x <- [0..5]] | y <- [0..6]]
+  unlines [unwords [show (arr !! y !! x) | x <- [0..6]] | y <- [0..5]]
 
 play :: Game -> Result -> TournammentState -> IO TournammentState
 
@@ -56,8 +56,4 @@ person_play game (ContinueGame state) tournament_state =
            person_play game (game 'X' (Action act) state) tournament_state
 
 
-
-
-             
--- play magicsum (ContinueGame magicsum_start) simple_player (0,0,0)
--- play magicsum (ContinueGame magicsum_start) (mm_player magicsum) (0,0,0) -- minimax player
+-- play connect4 (ContinueGame connect4_start) (0,0,0)
