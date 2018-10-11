@@ -35,8 +35,14 @@ instance Show Action where
 instance Read Action where
     readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
 
-
-
+connect4 :: Game
+connect4 player move (State board colPos)
+    | win move mine                = EndOfGame 1    magicsum_start   -- agent wins
+    | available == [move]          = EndOfGame 0  magicsum_start     -- no more moves, draw
+    | otherwise                    =
+          ContinueGame (State (others,(move:mine))   -- note roles have flipped
+                        [act | act <- available, act /= move])
+    where (State newBoard newColCount) = updateBoard player move board colPos
 
 updateBoard :: Player -> Action -> State -> State
 updateBoard player (Action x) (State board colPos) =
@@ -46,6 +52,16 @@ updateBoard player (Action x) (State board colPos) =
         updatedRow = Row (replaceNth x player rowToUpdate)
         updatedBoard = replaceNth y updatedRow board
     in (State updatedBoard updatedColCount)
+
+isBoardFull :: GameBoard -> Bool
+isBoardFull [] = False
+isBoardFull ((Row r) : rest) = rowHasSpot(r) || isBoardFull(rest)
+
+rowHasSpot :: [Char] -> Bool
+rowHasSpot [] = True
+rowHasSpot (p : rest)
+    | p == '*' = False
+    | otherwise = rowHasSpot(rest)
 
 replaceNth _ _ [] = []
 replaceNth n newVal (x:xs)
