@@ -14,11 +14,11 @@ type TournammentState = (Int,Int,Int)   -- wins, losses, ties
 
 --function to print our shit
 printArray arr =
-  putStr (unlines [unwords [show (arr !! x !! y) | x <- [0..5]] | y <- [0..6]])
+  unlines [unwords [show (arr !! x !! y) | x <- [0..5]] | y <- [0..6]]
 
-play :: Game -> Result -> Player -> TournammentState -> IO TournammentState
+play :: Game -> Result -> TournammentState -> IO TournammentState
 
-play game start opponent tournament_state =
+play game start tournament_state =
   let (wins, losses,ties) = tournament_state in
   do
       putStrLn ("Tournament results: "++ show wins++ " wins "++show losses++" losses "++show ties++" ties")
@@ -26,55 +26,38 @@ play game start opponent tournament_state =
       line <- getLine
       if line == "0"
         then
-            person_play game start opponent tournament_state
+            person_play game start tournament_state
         else if line ==  "1"
-        then computer_play game start opponent tournament_state
+        then person_play game start tournament_state
         else if line == "2"
             then return tournament_state
-        else play game start opponent tournament_state
+        else play game start tournament_state
 
-person_play :: Game -> Result -> Player -> TournammentState -> IO TournammentState
+person_play :: Game -> Result -> TournammentState -> IO TournammentState
 -- opponent has played, the person must now play
-person_play game (EndOfGame 1 start_state) opponent (wins,losses,ties) =
+person_play game (EndOfGame 'X' start_state) (wins,losses,ties) =
    do
       putStrLn "Computer won!"
-      play game (ContinueGame start_state) opponent (wins,losses+1,ties)
-person_play game (EndOfGame 0 start_state) opponent (wins,losses,ties) =
+      play game (ContinueGame start_state) (wins,losses+1,ties)
+person_play game (EndOfGame 'O' start_state) (wins,losses,ties) =
    do
-      putStrLn "I't a draw"
-      play game (ContinueGame start_state) opponent (wins,losses,ties+1)
-person_play game (ContinueGame state) opponent tournament_state =
+      putStrLn "It's a draw"
+      play game (ContinueGame start_state) (wins,losses,ties+1)
+person_play game (ContinueGame state) tournament_state =
    do
-      let State internal avail = state
-      putStrLn ("State: "++show internal++" choose one of "++show avail)
+      let State gameBoard colCount = state
+      putStrLn (printArray gameBoard)
       line <- getLine
-      let action = (readMaybe line :: Maybe Action)
-      if (action == Nothing) || not ((fromJust action) `elem` avail)
+      let Action act = (read line :: Action)
+      if (colCount !! act) == 0 || act > length(colCount) -1
         then  -- error; redo
-           person_play game (ContinueGame state) opponent tournament_state
+           person_play game (ContinueGame state) tournament_state
         else
-           computer_play game (game (fromJust action) state) opponent tournament_state
+           person_play game (game 'X' (Action act) state) tournament_state
 
 
-computer_play :: Game -> Result -> Player -> TournammentState -> IO TournammentState
--- computer_play game current_result opponent tournament_state
--- person has played, the computer must now play
-computer_play game (EndOfGame 1  start_state) opponent (wins,losses,ties) =
-   do
-      putStrLn "You won!"
-      play game  (ContinueGame start_state) opponent (wins+1,losses,ties)
-computer_play game (EndOfGame 0  start_state) opponent (wins,losses,ties) =
-   do
-      putStrLn "I't a draw"
-      play game (ContinueGame start_state) opponent (wins,losses,ties+1)
-      
-computer_play game (ContinueGame state) opponent tournament_state =
-      let 
-          opponent_move = opponent state
-        in
-          do
-            putStrLn ("The computer chose "++show opponent_move)
-            person_play game (game opponent_move state) opponent tournament_state
+
+
              
 -- play magicsum (ContinueGame magicsum_start) simple_player (0,0,0)
 -- play magicsum (ContinueGame magicsum_start) (mm_player magicsum) (0,0,0) -- minimax player

@@ -25,11 +25,8 @@ type Player = Char
 newtype Action = Action Int                          -- a move for a player
          deriving (Ord,Eq)
 
-newtype Row = Row [Char]                          -- a move for a player
-         deriving (Ord,Eq, Show)
-
 data MoveRes = MoveRes GameBoard (Int, Int)
-type GameBoard = [Row]   -- (self,other)
+type GameBoard = [[Char]]   -- (self,other)
 
 instance Show Action where
     show (Action i) = show i
@@ -47,15 +44,15 @@ connect4 player (Action move) (State board colPos)
 updateBoard :: Player -> Int -> State -> State
 updateBoard player x (State board colPos) =
     let y = colPos !! x
-        (Row rowToUpdate) = board !! x
+        rowToUpdate = board !! x
         updatedColCount = replaceNth x (y-1) colPos
-        updatedRow = Row (replaceNth x player rowToUpdate)
+        updatedRow = replaceNth x player rowToUpdate
         updatedBoard = replaceNth y updatedRow board
     in (State updatedBoard updatedColCount)
 
 isBoardFull :: GameBoard -> Bool
 isBoardFull [] = False
-isBoardFull ((Row r) : rest) = rowHasSpot(r) || isBoardFull(rest)
+isBoardFull (r : rest) = rowHasSpot(r) || isBoardFull(rest)
 
 rowHasSpot :: [Char] -> Bool
 rowHasSpot [] = True
@@ -69,12 +66,12 @@ replaceNth n newVal (x:xs)
    | otherwise = x:replaceNth (n-1) newVal xs
 
 
-connect4_start = State [Row ['*', '*', '*', '*', '*', '*', '*'], 
-                        Row ['*', '*', '*', '*', '*', '*', '*'],
-                        Row ['*', '*', '*', '*', '*', '*', '*'],
-                        Row ['*', '*', '*', '*', '*', '*', '*'],
-                        Row ['*', '*', '*', '*', '*', '*', '*'],
-                        Row ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
+connect4_start = State [ ['*', '*', '*', '*', '*', '*', '*'], 
+                         ['*', '*', '*', '*', '*', '*', '*'],
+                         ['*', '*', '*', '*', '*', '*', '*'],
+                         ['*', '*', '*', '*', '*', '*', '*'],
+                         ['*', '*', '*', '*', '*', '*', '*'],
+                         ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
 
 win :: MoveRes -> Char -> Bool
 win (MoveRes board (i, j)) player =
@@ -91,55 +88,55 @@ checkHelper :: GameBoard -> Char -> Int -> Int -> (Int -> Int) -> (Int -> Int) -
 checkHelper board player i j fi fj acc
     | i > 5 || j > 6 || i < 0 || j < 0 || (row !! j /= player) = acc
     | otherwise = checkHelper board player (fi i) (fj j) fi fj (acc+1) 
-    where (Row row) = board !! i
+    where row = board !! i
 
 
 -- win tests
-false_start = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*']] (5, 0)
+false_start = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*']] (5, 0)
 
-false_oneoff = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['X', 'X', 'X', '*', '*', '*', '*'],
-    Row ['X', 'X', 'X', '*', '*', '*', '*'],
-    Row ['X', 'X', 'X', '*', '*', '*', '*']] (5, 0)
+false_oneoff = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['X', 'X', 'X', '*', '*', '*', '*'],
+     ['X', 'X', 'X', '*', '*', '*', '*'],
+     ['X', 'X', 'X', '*', '*', '*', '*']] (5, 0)
 
-false_blocked = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
-     Row ['*', 'O', 'O', 'O', 'O', 'O', '*'],
-     Row ['*', 'O', 'X', 'X', 'X', 'O', '*'],
-     Row ['*', 'O', 'X', 'X', 'X', 'O', '*'],
-     Row ['*', 'O', 'X', 'x', 'X', 'O', '*'],
-     Row ['*', 'O', 'O', 'O', 'O', 'O', '*']] (1, 3)
+false_blocked = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
+      ['*', 'O', 'O', 'O', 'O', 'O', '*'],
+      ['*', 'O', 'X', 'X', 'X', 'O', '*'],
+      ['*', 'O', 'X', 'X', 'X', 'O', '*'],
+      ['*', 'O', 'X', 'x', 'X', 'O', '*'],
+      ['*', 'O', 'O', 'O', 'O', 'O', '*']] (1, 3)
 
-true_vert = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', 'X', '*', '*', '*'],
-    Row ['*', '*', '*', 'X', '*', '*', '*'],
-    Row ['*', '*', '*', 'X', '*', '*', '*'],
-    Row ['*', '*', '*', 'X', '*', '*', '*']] (2, 3)
+true_vert = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', 'X', '*', '*', '*'],
+     ['*', '*', '*', 'X', '*', '*', '*'],
+     ['*', '*', '*', 'X', '*', '*', '*'],
+     ['*', '*', '*', 'X', '*', '*', '*']] (2, 3)
     
-true_horz = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['*', '*', 'X', 'X', 'X', 'X', '*']] (5, 4)
+true_horz = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['*', '*', 'X', 'X', 'X', 'X', '*']] (5, 4)
 
-true_diag_down = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
-    Row ['*', '*', '*', '*', '*', '*', '*'],
-    Row ['X', '*', '*', '*', '*', '*', '*'],
-    Row ['*', 'X', '*', '*', '*', '*', '*'],
-    Row ['*', '*', 'X', '*', '*', '*', '*'],
-    Row ['*', '*', '*', 'X', '*', '*', '*']] (2, 0)
+true_diag_down = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
+     ['*', '*', '*', '*', '*', '*', '*'],
+     ['X', '*', '*', '*', '*', '*', '*'],
+     ['*', 'X', '*', '*', '*', '*', '*'],
+     ['*', '*', 'X', '*', '*', '*', '*'],
+     ['*', '*', '*', 'X', '*', '*', '*']] (2, 0)
 
-true_diag_up = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
-    Row ['*', '*', '*', '*', 'X', '*', '*'],
-    Row ['*', '*', '*', 'X', '*', '*', '*'],
-    Row ['*', '*', 'X', '*', '*', '*', '*'],
-    Row ['*', 'X', '*', '*', '*', '*', '*'],
-    Row ['*', '*', '*', '*', '*', '*', '*']] (2, 3)
+true_diag_up = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
+     ['*', '*', '*', '*', 'X', '*', '*'],
+     ['*', '*', '*', 'X', '*', '*', '*'],
+     ['*', '*', 'X', '*', '*', '*', '*'],
+     ['*', 'X', '*', '*', '*', '*', '*'],
+     ['*', '*', '*', '*', '*', '*', '*']] (2, 3)
