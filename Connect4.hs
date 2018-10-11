@@ -12,9 +12,13 @@ data Result = EndOfGame Double State    -- end of game, value, starting state
             | ContinueGame State        -- continue with new state
          deriving (Eq)
 
-type Game = Action -> State -> Result
+type Game = Player -> Action -> State -> Result
 
-type Player = State -> Action
+type ColCount = [Int]
+
+type Player = Char
+
+--type Player = State -> Action
 
 ------ The Magic Sum Game -------
 
@@ -24,7 +28,7 @@ newtype Action = Action Int                          -- a move for a player
 newtype Row = Row [Char]                          -- a move for a player
          deriving (Ord,Eq, Show)
 
-type GameBoard = [Row, Row, Row, Row, Row, Row, Row]   -- (self,other)
+type GameBoard = [Row]   -- (self,other)
 
 instance Show Action where
     show (Action i) = show i
@@ -32,20 +36,28 @@ instance Read Action where
     readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
 
 
-magicsum :: Game
-magicsum move (State board colPos)
-    | win move mine                = EndOfGame 1    magicsum_start   -- agent wins
-    | available == [move]          = EndOfGame 0  magicsum_start     -- no more moves, draw
-    | otherwise                    =
-          ContinueGame (State (others,(move:mine))   -- note roles have flipped
-                        [act | act <- available, act /= move])
+
+
+updateBoard :: Player -> Action -> State -> State
+updateBoard player (Action x) (State board colPos) =
+    let y = colPos !! x
+        (Row rowToUpdate) = board !! x
+        updatedColCount = replaceNth x (y-1) colPos
+        updatedRow = Row (replaceNth x player rowToUpdate)
+        updatedBoard = replaceNth y updatedRow board
+    in (State updatedBoard updatedColCount)
+
+replaceNth _ _ [] = []
+replaceNth n newVal (x:xs)
+   | n == 0 = newVal:xs
+   | otherwise = x:replaceNth (n-1) newVal xs
 
 magicsum_start = State [Row ['*', '*', '*', '*', '*', '*', '*'], 
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
-                        Row ['*', '*', '*', '*', '*', '*', '*']] [0,0,0,0,0,0,0]
+                        Row ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
 
 -- win n ns = the agent wins if it selects n given it has already selected ns
 --win :: Action -> [Action] -> Bool
