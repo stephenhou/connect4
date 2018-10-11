@@ -28,7 +28,7 @@ newtype Action = Action Int                          -- a move for a player
 newtype Row = Row [Char]                          -- a move for a player
          deriving (Ord,Eq, Show)
 
-newtype MoveRes = MoveRes (GameBoard, (Int, Int))
+data MoveRes = MoveRes GameBoard (Int, Int)
 type GameBoard = [Row]   -- (self,other)
 
 instance Show Action where
@@ -37,15 +37,15 @@ instance Read Action where
     readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
 
 connect4 :: Game
-connect4 player move (State board colPos)
-    | win move mine                = EndOfGame player    magicsum_start   -- agent wins
-    | isBoardFull                  = EndOfGame 't'       magicsum_start     -- no more moves, draw
-    | otherwise                    =
+connect4 player (Action move) (State board colPos)
+    | win (MoveRes board (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
+    | isBoardFull board                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
+    | otherwise                                          =
           ContinueGame (State newBoard newColCount)
-    where (State newBoard newColCount) = updateBoard player move board colPos
+    where (State newBoard newColCount) = updateBoard player move (State board colPos)
 
-updateBoard :: Player -> Action -> State -> State
-updateBoard player (Action x) (State board colPos) =
+updateBoard :: Player -> Int -> State -> State
+updateBoard player x (State board colPos) =
     let y = colPos !! x
         (Row rowToUpdate) = board !! x
         updatedColCount = replaceNth x (y-1) colPos
@@ -76,21 +76,22 @@ connect4_start = State [Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
 
-win :: MoveRes Char -> Bool
-win (board, (i, j)) player =
+win :: MoveRes -> Char -> Bool
+win (MoveRes board (i, j)) player =
     (checkConsecutive board player 4 i j (\ i -> i) (\ j -> j+1) (\ i -> i) (\j -> j-1)) ||     -- check horizontal
     (checkConsecutive board player 4 i j (\ i -> i+1) (\ j -> j) (\ i -> i-1) (\j -> j)) ||     -- check vertical
     (checkConsecutive board player 4 i j (\ i -> i-1) (\ j -> j-1) (\ i -> i+1) (\j -> j+1)) || -- check downwards diagonal
     (checkConsecutive board player 4 i j (\ i -> i+1) (\ j -> j-1) (\ i -> i-1) (\j -> j+1))    -- check upwards diagonal
 
-checkConsecutive :: GameBoard -> Char -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> Bool
-checkConsecutive player num x y fi fj gi gj = 
-    checkHelper board player x y fi fj 0) + (checkHelper board player num gi gj 0) > (num-1)
+checkConsecutive :: GameBoard -> Char -> Int -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> Bool
+checkConsecutive board player num x y fi fj gi gj = 
+    ((checkHelper board player x y fi fj 0) + (checkHelper board player x y gi gj 0)) > (num-1)
 
 checkHelper :: GameBoard -> Char -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> Int -> Int
 checkHelper board player i j fi fj acc
-    | i > 5 || j > 6 || i < 0 || j < 0 || (board !! i !! j) != player = acc
-    | otherwise = checkHelper board player (fi i) (fj j) (acc+1) 
+    | i > 5 || j > 6 || i < 0 || j < 0 || (row !! j /= player) = acc
+    | otherwise = checkHelper board player (fi i) (fj j) fi fj (acc+1) 
+    where (Row row) = board !! i
 
 
 ------- A Player -------
