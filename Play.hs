@@ -12,6 +12,9 @@ import Data.Maybe   (fromJust)
 
 type TournammentState = (Int,Int,Int)   -- wins, losses, ties
 
+--function to print our shit
+printArray arr =
+  putStr (unlines [unwords [show (arr !! x !! y) | x <- [0..5]] | y <- [0..6]])
 
 play :: Game -> Result -> Player -> TournammentState -> IO TournammentState
 
