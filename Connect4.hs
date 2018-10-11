@@ -8,7 +8,7 @@ module Connect4 where
 data State = State GameBoard [Int]  -- internal_state available_actions
          deriving (Ord, Eq, Show)
 
-data Result = EndOfGame Double State    -- end of game, value, starting state
+data Result = EndOfGame Char State    -- end of game, value, starting state
             | ContinueGame State        -- continue with new state
          deriving (Eq)
 
@@ -37,11 +37,10 @@ instance Read Action where
 
 connect4 :: Game
 connect4 player move (State board colPos)
-    | win move mine                = EndOfGame 1    magicsum_start   -- agent wins
-    | available == [move]          = EndOfGame 0  magicsum_start     -- no more moves, draw
+    | win move mine                = EndOfGame player    magicsum_start   -- agent wins
+    | isBoardFull                  = EndOfGame 't'       magicsum_start     -- no more moves, draw
     | otherwise                    =
-          ContinueGame (State (others,(move:mine))   -- note roles have flipped
-                        [act | act <- available, act /= move])
+          ContinueGame (State newBoard newColCount)
     where (State newBoard newColCount) = updateBoard player move board colPos
 
 updateBoard :: Player -> Action -> State -> State
