@@ -18,14 +18,39 @@ type Player = State -> Action
 
 ------ The Magic Sum Game -------
 
+newtype Action = Action Int                          -- a move for a player
+         deriving (Ord,Eq)
+
 newtype Col = Col [Char]                          -- a move for a player
          deriving (Ord,Eq)
-type InternalState = ([Col],[Col],[Col],[Col],[Col],[Col],[Col])
+type InternalState = (Col, Col, Col, Col, Col, Col, Col)   -- (self,other)
 
+instance Show Action where
+    show (Action i) = show i
+instance Read Action where
+    readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
+
+
+magicsum :: Game
+magicsum move (State (mine,others) available) 
+    | win move mine                = EndOfGame 1    magicsum_start   -- agent wins
+    | available == [move]          = EndOfGame 0  magicsum_start     -- no more moves, draw
+    | otherwise                    =
+          ContinueGame (State (others,(move:mine))   -- note roles have flipped
+                        [act | act <- available, act /= move])
 
 magicsum_start = State (['*', '*', '*', '*', '*', '*'],['*', '*', '*', '*', '*', '*'],['*', '*', '*', '*', '*', '*'],['*', '*', '*', '*', '*', '*'],['*', '*', '*', '*', '*', '*'],['*', '*', '*', '*', '*', '*'],['*', '*', '*', '*', '*', '*'])
 
 -- win n ns = the agent wins if it selects n given it has already selected ns
+win :: Action -> [Action] -> Bool
+win (Action n) ns  = or [n+x+y==15 | Action x <- ns, Action y <- ns, x/=y]
+
+------- A Player -------
+
+simple_player :: Player
+-- this player has an ordering of the moves, and chooses the first one available
+simple_player (State _ avail) = head [Action e | e <- [5,6,4,2,8,1,3,7,9],
+                                               Action e `elem` avail]
 
 
 -- Test cases
