@@ -1,9 +1,9 @@
 -- CPSC 312 - 2018 - Games in Haskell
-module MagicSum where
+module Connect4 where
 
 -- To run it, try:
 -- ghci
--- :load MagicSum
+-- :load Connect4
 
 data State = State GameBoard [Int]  -- internal_state available_actions
          deriving (Ord, Eq, Show)
@@ -16,7 +16,7 @@ type Game = Action -> State -> Result
 
 type Player = State -> Action
 
------- The Magic Sum Game -------
+------ The Connect4 Sum Game -------
 
 newtype Action = Action Int                          -- a move for a player
          deriving (Ord,Eq)
@@ -32,15 +32,15 @@ instance Read Action where
     readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
 
 
-magicsum :: Game
-magicsum move (State board colPos)
-    | win move mine                = EndOfGame 1    magicsum_start   -- agent wins
-    | available == [move]          = EndOfGame 0  magicsum_start     -- no more moves, draw
+Connect4 :: Game
+Connect4 move (State board colPos)
+    | win move mine                = EndOfGame 1 connect4_start   -- agent wins
+    | available == [move]          = EndOfGame 0 connect4_start     -- no more moves, draw
     | otherwise                    =
           ContinueGame (State (others,(move:mine))   -- note roles have flipped
                         [act | act <- available, act /= move])
 
-magicsum_start = State [Row ['*', '*', '*', '*', '*', '*', '*'], 
+connect4_start = State [Row ['*', '*', '*', '*', '*', '*', '*'], 
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
