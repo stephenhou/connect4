@@ -9,7 +9,7 @@ data State = State GameBoard [Int]  -- internal_state available_actions
          deriving (Ord, Eq, Show)
 
 data Result = EndOfGame Double State    -- end of game, value, starting state
-            | ContinueGame State        -- continue with new state
+            | ContinueGame State         -- continue with new state
          deriving (Eq)
 
 type Game = Action -> State -> Result
@@ -23,6 +23,8 @@ newtype Action = Action Int                          -- a move for a player
 
 newtype Row = Row [Char]                          -- a move for a player
          deriving (Ord,Eq, Show)
+
+newtype MoveRes = MoveRes (GameBoard, (Int, Int))
 
 type GameBoard = [Row, Row, Row, Row, Row, Row, Row]   -- (self,other)
 
@@ -47,9 +49,22 @@ connect4_start = State [Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*']] [0,0,0,0,0,0,0]
 
--- win n ns = the agent wins if it selects n given it has already selected ns
---win :: Action -> [Action] -> Bool
---win (Action n) ns  = or [n+x+y==15 | Action x <- ns, Action y <- ns, x/=y]
+win :: MoveRes Char -> Bool
+win (board, (i, j)) player =
+    (checkConsecutive board player 4 i j (\ i -> i) (\ j -> j+1) (\ i -> i) (\j -> j-1)) ||     -- check horizontal
+    (checkConsecutive board player 4 i j (\ i -> i+1) (\ j -> j) (\ i -> i-1) (\j -> j)) ||     -- check vertical
+    (checkConsecutive board player 4 i j (\ i -> i-1) (\ j -> j-1) (\ i -> i+1) (\j -> j+1)) || -- check downwards diagonal
+    (checkConsecutive board player 4 i j (\ i -> i+1) (\ j -> j-1) (\ i -> i-1) (\j -> j+1))    -- check upwards diagonal
+
+checkConsecutive :: GameBoard -> Char -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> Bool
+checkConsecutive player num x y fi fj gi gj = 
+    checkHelper board player x y fi fj 0) + (checkHelper board player num gi gj 0) > (num-1)
+
+checkHelper :: GameBoard -> Char -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> Int -> Int
+checkHelper board player i j fi fj acc
+    | i > 5 || j > 6 || i < 0 || j < 0 || (board !! i !! j) != player = acc
+    | otherwise = checkHelper board player (fi i) (fj j) (acc+1) 
+
 
 ------- A Player -------
 
