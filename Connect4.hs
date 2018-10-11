@@ -85,7 +85,7 @@ win (MoveRes board (i, j)) player =
 
 checkConsecutive :: GameBoard -> Char -> Int -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> Bool
 checkConsecutive board player num x y fi fj gi gj = 
-    ((checkHelper board player x y fi fj 0) + (checkHelper board player x y gi gj 0)) > (num-1)
+    ((checkHelper board player x y fi fj (-1)) + (checkHelper board player x y gi gj (-1))) >= (num-1)
 
 checkHelper :: GameBoard -> Char -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> Int -> Int
 checkHelper board player i j fi fj acc
@@ -94,28 +94,52 @@ checkHelper board player i j fi fj acc
     where (Row row) = board !! i
 
 
-------- A Player -------
+-- win tests
+false_start = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*']] (5, 0)
 
---simple_player :: Player
--- this player has an ordering of the moves, and chooses the first one available
---simple_player (State _ avail) = head [Action e | e <- [5,6,4,2,8,1,3,7,9],
---                                               Action e `elem` avail]
+false_oneoff = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['X', 'X', 'X', '*', '*', '*', '*'],
+    Row ['X', 'X', 'X', '*', '*', '*', '*'],
+    Row ['X', 'X', 'X', '*', '*', '*', '*']] (5, 0)
 
+false_blocked = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
+     Row ['*', 'O', 'O', 'O', 'O', 'O', '*'],
+     Row ['*', 'O', 'X', 'X', 'X', 'O', '*'],
+     Row ['*', 'O', 'X', 'X', 'X', 'O', '*'],
+     Row ['*', 'O', 'X', 'x', 'X', 'O', '*'],
+     Row ['*', 'O', 'O', 'O', 'O', 'O', '*']] (1, 3)
 
--- Test cases
--- magicsum magicsum_start (simple_player magicsum_start)
--- a i = Action i  -- make it easier to type
--- as lst = [Action i | i <- lst]
--- magicsum (a 6) (State (as [3,5], as [2,7]) (as [1,4,6,8,9])) 
--- magicsum (a 3) (State (as [5,7], as [2,9]) (as [1,3,4,6,8])) 
+true_vert = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', 'X', '*', '*', '*'],
+    Row ['*', '*', '*', 'X', '*', '*', '*'],
+    Row ['*', '*', '*', 'X', '*', '*', '*'],
+    Row ['*', '*', '*', 'X', '*', '*', '*']] (2, 3)
+    
+true_horz = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['*', '*', 'X', 'X', 'X', 'X', '*']] (5, 4)
 
+true_diag_down = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
+    Row ['*', '*', '*', '*', '*', '*', '*'],
+    Row ['X', '*', '*', '*', '*', '*', '*'],
+    Row ['*', 'X', '*', '*', '*', '*', '*'],
+    Row ['*', '*', 'X', '*', '*', '*', '*'],
+    Row ['*', '*', '*', 'X', '*', '*', '*']] (2, 0)
 
-
-
-
-
--- Why is it called the "magic sum game"?
--- The following is a magic square:
--- 294
--- 753
--- 618
+true_diag_up = MoveRes [Row ['*', '*', '*', '*', '*', '*', '*'], 
+    Row ['*', '*', '*', '*', 'X', '*', '*'],
+    Row ['*', '*', '*', 'X', '*', '*', '*'],
+    Row ['*', '*', 'X', '*', '*', '*', '*'],
+    Row ['*', 'X', '*', '*', '*', '*', '*'],
+    Row ['*', '*', '*', '*', '*', '*', '*']] (2, 3)
