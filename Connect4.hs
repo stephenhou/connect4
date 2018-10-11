@@ -21,10 +21,10 @@ type Player = State -> Action
 newtype Action = Action Int                          -- a move for a player
          deriving (Ord,Eq)
 
-newtype Col = Col [Char]                          -- a move for a player
+newtype Row = Row [Char]                          -- a move for a player
          deriving (Ord,Eq, Show)
 
-type GameBoard = (Col, Col, Col, Col, Col, Col, Col)   -- (self,other)
+type GameBoard = [Row, Row, Row, Row, Row, Row, Row]   -- (self,other)
 
 instance Show Action where
     show (Action i) = show i
@@ -33,14 +33,19 @@ instance Read Action where
 
 
 magicsum :: Game
-magicsum move state
+magicsum move (State board colPos)
     | win move mine                = EndOfGame 1    magicsum_start   -- agent wins
     | available == [move]          = EndOfGame 0  magicsum_start     -- no more moves, draw
     | otherwise                    =
           ContinueGame (State (others,(move:mine))   -- note roles have flipped
                         [act | act <- available, act /= move])
 
-magicsum_start = State (Col ['*', '*', '*', '*', '*', '*'], Col ['*', '*', '*', '*', '*', '*'], Col ['*', '*', '*', '*', '*', '*'], Col ['*', '*', '*', '*', '*', '*'], Col ['*', '*', '*', '*', '*', '*'], Col ['*', '*', '*', '*', '*', '*'], Col ['*', '*', '*', '*', '*', '*']) [0,0,0,0,0,0,0]
+magicsum_start = State [Row ['*', '*', '*', '*', '*', '*', '*'], 
+                        Row ['*', '*', '*', '*', '*', '*', '*'],
+                        Row ['*', '*', '*', '*', '*', '*', '*'],
+                        Row ['*', '*', '*', '*', '*', '*', '*'],
+                        Row ['*', '*', '*', '*', '*', '*', '*'],
+                        Row ['*', '*', '*', '*', '*', '*', '*']] [0,0,0,0,0,0,0]
 
 -- win n ns = the agent wins if it selects n given it has already selected ns
 --win :: Action -> [Action] -> Bool

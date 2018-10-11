@@ -5,7 +5,7 @@ module Play where
 -- ghci
 -- :load Play
 
-import MagicSum
+import Connect4
 import System.IO
 import Text.Read   (readMaybe)
 import Data.Maybe   (fromJust)
