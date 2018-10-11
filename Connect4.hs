@@ -8,13 +8,17 @@ module Connect4 where
 data State = State GameBoard [Int]  -- internal_state available_actions
          deriving (Ord, Eq, Show)
 
-data Result = EndOfGame Double State    -- end of game, value, starting state
-            | ContinueGame State         -- continue with new state
+data Result = EndOfGame Char State    -- end of game, value, starting state
+            | ContinueGame State        -- continue with new state
          deriving (Eq)
 
-type Game = Action -> State -> Result
+type Game = Player -> Action -> State -> Result
 
-type Player = State -> Action
+type ColCount = [Int]
+
+type Player = Char
+
+--type Player = State -> Action
 
 ------ The Connect4 Sum Game -------
 
@@ -25,29 +29,52 @@ newtype Row = Row [Char]                          -- a move for a player
          deriving (Ord,Eq, Show)
 
 newtype MoveRes = MoveRes (GameBoard, (Int, Int))
-
-type GameBoard = [Row, Row, Row, Row, Row, Row, Row]   -- (self,other)
+type GameBoard = [Row]   -- (self,other)
 
 instance Show Action where
     show (Action i) = show i
 instance Read Action where
     readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
 
-
-Connect4 :: Game
-Connect4 move (State board colPos)
-    | win move mine                = EndOfGame 1 connect4_start   -- agent wins
-    | available == [move]          = EndOfGame 0 connect4_start     -- no more moves, draw
+connect4 :: Game
+connect4 player move (State board colPos)
+    | win move mine                = EndOfGame player    magicsum_start   -- agent wins
+    | isBoardFull                  = EndOfGame 't'       magicsum_start     -- no more moves, draw
     | otherwise                    =
-          ContinueGame (State (others,(move:mine))   -- note roles have flipped
-                        [act | act <- available, act /= move])
+          ContinueGame (State newBoard newColCount)
+    where (State newBoard newColCount) = updateBoard player move board colPos
+
+updateBoard :: Player -> Action -> State -> State
+updateBoard player (Action x) (State board colPos) =
+    let y = colPos !! x
+        (Row rowToUpdate) = board !! x
+        updatedColCount = replaceNth x (y-1) colPos
+        updatedRow = Row (replaceNth x player rowToUpdate)
+        updatedBoard = replaceNth y updatedRow board
+    in (State updatedBoard updatedColCount)
+
+isBoardFull :: GameBoard -> Bool
+isBoardFull [] = False
+isBoardFull ((Row r) : rest) = rowHasSpot(r) || isBoardFull(rest)
+
+rowHasSpot :: [Char] -> Bool
+rowHasSpot [] = True
+rowHasSpot (p : rest)
+    | p == '*' = False
+    | otherwise = rowHasSpot(rest)
+
+replaceNth _ _ [] = []
+replaceNth n newVal (x:xs)
+   | n == 0 = newVal:xs
+   | otherwise = x:replaceNth (n-1) newVal xs
+
 
 connect4_start = State [Row ['*', '*', '*', '*', '*', '*', '*'], 
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
                         Row ['*', '*', '*', '*', '*', '*', '*'],
-                        Row ['*', '*', '*', '*', '*', '*', '*']] [0,0,0,0,0,0,0]
+                        Row ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
 
 win :: MoveRes Char -> Bool
 win (board, (i, j)) player =
