@@ -35,7 +35,7 @@ play game start tournament_state opponent =
 
 person_play :: Game -> Result -> TournammentState -> Opponent -> IO TournammentState
 -- opponent has played, the person must now play
-person_play game (EndOfGame 'Y' start_state) (wins,losses,ties) opponent =
+person_play game (EndOfGame 'O' start_state) (wins,losses,ties) opponent =
    do
       putStrLn "Computer won!"
       play game (ContinueGame start_state) (wins,losses+1,ties) opponent
@@ -50,7 +50,7 @@ person_play game (ContinueGame state) tournament_state opponent =
       putStrLn (printArray gameBoard)
       line <- getLine
       let action = (readMaybe line :: Maybe Int)
-      if (action == Nothing) || (fromJust action) -1 > length(colCount) - 1 || (colCount !! (fromJust action) -1) < 0
+      if (action == Nothing) || ((fromJust action)-1) > length(colCount) || (colCount !! ((fromJust action)-1)) < 0
         then  -- error; redo
            person_play game (ContinueGame state) tournament_state opponent
         else
@@ -74,6 +74,6 @@ computer_play game (ContinueGame state) tournament_state player_move opponent =
         in
           do
             putStrLn ("The computer chose "++show opponent_move)
-            person_play game (game 'Y' opponent_move state) tournament_state opponent
+            person_play game (game 'O' opponent_move state) tournament_state opponent
 
 -- play connect4 (ContinueGame connect4_start) (0,0,0) computer

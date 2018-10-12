@@ -17,6 +17,8 @@ type Game = Player -> Int -> State -> Result
 type Player = Char
 type Opponent = State -> Int -> Int
 
+type ComputerPlayer = State -> Int
+
 --type Player = State -> Action
 
 ------ The Connect4 Sum Game -------
@@ -85,7 +87,7 @@ checkHelper board player i j fi fj acc
 
 computer :: Opponent
 -- this player has an ordering of the moves, and chooses the first one available
-computer state player_move = 0
+computer state player_move = 6
 
 
 
