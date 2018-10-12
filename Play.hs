@@ -56,7 +56,6 @@ person_play game (ContinueGame state) opponent tournament_state =
         else
            computer_play game (game 'X' ((fromJust action)-1) state) opponent tournament_state
 
-
 computer_play :: Game -> Result -> ComputerPlayer -> TournammentState -> IO TournammentState
 -- computer_play game current_result opponent tournament_state
 -- person has played, the computer must now play
@@ -78,4 +77,3 @@ computer_play game (ContinueGame state) opponent tournament_state =
             person_play game (game 'O' opponent_move state) opponent tournament_state
 
 -- play connect4 (ContinueGame connect4_start) simple_player (0,0,0)
-

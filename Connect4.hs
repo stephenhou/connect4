@@ -12,7 +12,7 @@ data Result = EndOfGame Char State    -- end of game, value, starting state
             | ContinueGame State        -- continue with new state
          deriving (Eq)
 
-type Game = Player -> Int -> State -> Result
+type Game = Player -> Action -> State -> Result
 
 type Player = Char
 
