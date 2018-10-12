@@ -15,7 +15,7 @@ data Result = EndOfGame Char State    -- end of game, value, starting state
 type Game = Player -> Int -> State -> Result
 
 type Player = Char
-type Opponent = State -> Int -> Int
+type Opponent = State -> Int -> Int -> Int
 
 type ComputerPlayer = State -> Int
 
@@ -92,9 +92,38 @@ isOutOfBound i j = i > 5 || j > 6 || i < 0 || j < 0
 
 computer :: Opponent
 -- this player has an ordering of the moves, and chooses the first one available
-computer state player_move = 6
+computer state playerMove prevMove = 
+    let winningMove = if prevMove /= -1 then findMandatoryMove state prevMove 'O' else -1
+        nextMove = if playerMove /= -1 then findMandatoryMove state playerMove 'X' else 6 -- TODO: implement regular circumstance placement strategy
+    in if winningMove /= -1 then winningMove
+         else nextMove
 
--- Identifies from the human's last move the vertical/horizontal/vertical section that could now be 1 move away from winning
+-- can be used to find the winning move for the computer/find the position to block to prevent human from winning
+findMandatoryMove :: State -> Int -> Char -> Int
+findMandatoryMove (State board colPos) playerMove player = 
+    let horzPos = (findWinningGap player
+                    (checkStringHelper (State board colPos) 0 (colPos !! playerMove) (playerMove+3) (\ i -> i) (\ j -> j-1) [])
+                    0 0
+                  )
+        diagDownPos = (findWinningGap player
+                        (checkStringHelper (State board colPos) 0 ((colPos !! playerMove)+3) (playerMove+3) (\ i -> i-1) (\ j -> j-1) [])
+                        0 0
+                      )
+        diagUpPos = (findWinningGap player
+                        (checkStringHelper (State board colPos) 0 ((colPos !! playerMove)-3) (playerMove+3) (\ i -> i+1) (\ j -> j-1) [])
+                        0 0
+                      )
+        vertPos = (findWinningGap player
+                    (checkStringHelper (State board colPos) 3 ((colPos !! playerMove)+3) (playerMove) (\ i -> i-1) (\ j -> j) [])
+                    0 0
+                  )
+    in if horzPos /= -1 then horzPos
+         else if diagDownPos /= -1 then diagDownPos
+         else if diagUpPos /= -1 then diagUpPos
+         else vertPos
+
+
+-- identifies from the human's last move the vertical/horizontal/diagonal section that could now be 1 move away from winning
 checkStringHelper :: State -> Int -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> [Char] -> [Char]
 checkStringHelper (State board colPos) count i j fi fj acc
     | (count == 8) = acc
@@ -102,7 +131,7 @@ checkStringHelper (State board colPos) count i j fi fj acc
     | otherwise = checkStringHelper (State board colPos) (count+1) (fi i) (fj j) fi fj (elt ++ acc)
     where elt = if ((colPos !! j) <= i) then [(board !! i !! j)] else ['#'] -- if this spot isn't actually reachable on the next move, disregard
 
--- Uses check string to find a gap that could win the game for the input player
+-- uses check string to find a gap that could win the game for the input player
 findWinningGap :: Char -> [Char] -> Int -> Int -> Int
 findWinningGap player checkStr pos prevMatches
     | (pos == 7) = -1
@@ -118,10 +147,10 @@ checkNextInCheckStr player checkStr pos checksLeft
     where currCheck = ((checkStr !! pos) == player)
 
 test_board = [ ['*', '*', '*', '*', '*', '*', '*'], 
-    ['*', '*', '*', '*', 'X', '*', '*'],
-    ['*', '*', '*', 'X', '*', '*', '*'],
-    ['*', '*', 'X', '*', '*', '*', '*'],
-    ['*', 'X', '*', '*', '*', '*', '*'],
+    ['*', '*', '*', '*', '*', '*', '*'],
+    ['*', '*', '*', '*', '*', '*', '*'],
+    ['*', '*', '*', '*', '*', '*', '*'],
+    ['d', '*', '*', '*', '*', '*', '*'],
     ['*', '*', '*', '*', '*', '*', '*']]
 
 -- win tests
