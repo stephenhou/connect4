@@ -73,6 +73,7 @@ win (MoveRes board (i, j)) player =
     (checkConsecutive board player 4 i j (\ i -> i-1) (\ j -> j-1) (\ i -> i+1) (\j -> j+1)) || -- check downwards diagonal
     (checkConsecutive board player 4 i j (\ i -> i+1) (\ j -> j-1) (\ i -> i-1) (\j -> j+1))    -- check upwards diagonal
 
+-- checks for num consecutive elements of player, the functions passed in are used to move along horizontally/vertically/diagonally
 checkConsecutive :: GameBoard -> Char -> Int -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> (Int -> Int) -> Bool
 checkConsecutive board player num x y fi fj gi gj = 
     ((checkHelper board player x y fi fj (-1)) + (checkHelper board player x y gi gj (-1))) >= (num-1)
@@ -83,20 +84,38 @@ checkHelper board player i j fi fj acc
     | otherwise = checkHelper board player (fi i) (fj j) fi fj (acc+1) 
     where row = board !! i
 
+
+isOutOfBound :: Int -> Int -> Bool
+isOutOfBound i j = i > 5 || j > 6 || i < 0 || j < 0
+
 ------- Computer Opponent -------
 
 computer :: Opponent
 -- this player has an ordering of the moves, and chooses the first one available
 computer state player_move = 6
 
-checkStringHelper :: GameBoard -> Int -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> [Char] -> [Char]
-checkStringHelper board count i j fi fj acc
+-- Identifies from the human's last move the vertical/horizontal/vertical section that could now be 1 move away from winning
+checkStringHelper :: State -> Int -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> [Char] -> [Char]
+checkStringHelper (State board colPos) count i j fi fj acc
     | (count == 8) = acc
-    | isOutOfBound i j = checkStringHelper board (count+1) (fi i) (fj j) fi fj acc
-    | otherwise = checkStringHelper board (count+1) (fi i) (fj j) fi fj ([(board !! i !! j)] ++ acc)
+    | isOutOfBound i j = checkStringHelper (State board colPos) (count+1) (fi i) (fj j) fi fj acc
+    | otherwise = checkStringHelper (State board colPos) (count+1) (fi i) (fj j) fi fj (elt ++ acc)
+    where elt = if ((colPos !! j) <= i) then [(board !! i !! j)] else ['#'] -- if this spot isn't actually reachable on the next move, disregard
 
-isOutOfBound :: Int -> Int -> Bool
-isOutOfBound i j = i > 5 || j > 6 || i < 0 || j < 0
+-- Uses check string to find a gap that could win the game for the input player
+findWinningGap :: Char -> [Char] -> Int -> Int -> Int
+findWinningGap player checkStr pos prevMatches
+    | (pos == 7) = -1
+    | ((checkStr !! pos) == player) = findWinningGap player checkStr (pos+1) (prevMatches+1)
+    | ((checkStr !! pos) == '*') = if (checkNextInCheckStr player checkStr (pos+1) (3-prevMatches)) then pos else findWinningGap player checkStr (pos+1) 0
+    | otherwise = findWinningGap player checkStr (pos+1) 0
+
+checkNextInCheckStr :: Char -> [Char] -> Int -> Int -> Bool
+checkNextInCheckStr player checkStr pos checksLeft
+    | (checksLeft == 0) = True
+    | (pos >= 7) = False
+    | otherwise = currCheck && checkNextInCheckStr player checkStr (pos+1) (checksLeft-1)
+    where currCheck = ((checkStr !! pos) == player)
 
 test_board = [ ['*', '*', '*', '*', '*', '*', '*'], 
     ['*', '*', '*', '*', 'X', '*', '*'],
