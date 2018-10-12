@@ -20,21 +20,13 @@ type Player = Char
 
 ------ The Connect4 Sum Game -------
 
-newtype Action = Action Int                          -- a move for a player
-         deriving (Ord,Eq)
-
 data MoveRes = MoveRes GameBoard (Int, Int)
 type GameBoard = [[Char]]   -- (self,other)
 
-instance Show Action where
-    show (Action i) = show i
-instance Read Action where
-    readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
-
 connect4 :: Game
-connect4 player (Action move) (State board colPos)
-    | win (MoveRes board (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
-    | isBoardFull board                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
+connect4 player  move (State board colPos)
+    | win (MoveRes newBoard (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
+    | isBoardFull newBoard                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
     | otherwise                                          =
           ContinueGame (State newBoard newColCount)
     where (State newBoard newColCount) = updateBoard player move (State board colPos)
@@ -42,7 +34,7 @@ connect4 player (Action move) (State board colPos)
 updateBoard :: Player -> Int -> State -> State
 updateBoard player x (State board colPos) =
     let y = colPos !! x
-        rowToUpdate = board !! x
+        rowToUpdate = board !! y
         updatedColCount = replaceNth x (y-1) colPos
         updatedRow = replaceNth x player rowToUpdate
         updatedBoard = replaceNth y updatedRow board
@@ -64,12 +56,12 @@ replaceNth n newVal (x:xs)
    | otherwise = x:replaceNth (n-1) newVal xs
 
 
-connect4_start = State [ ['*', '*', '*', '*', '*', '*', '*'], 
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
+connect4_start = State [['*', '*', '*', '*', '*', '*', '*'], 
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
 
 win :: MoveRes -> Char -> Bool
 win (MoveRes board (i, j)) player =

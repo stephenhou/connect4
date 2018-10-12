@@ -46,14 +46,15 @@ person_play game (EndOfGame 'O' start_state) (wins,losses,ties) =
 person_play game (ContinueGame state) tournament_state =
    do
       let State gameBoard colCount = state
+      putStrLn "Choose column 1-7 to place peice"
       putStrLn (printArray gameBoard)
       line <- getLine
-      let Action act = (read line :: Action)
-      if (colCount !! act) == 0 || act > length(colCount) -1
+      let action = (readMaybe line :: Maybe Int)
+      if (action == Nothing) || (fromJust action) -1 > length(colCount) - 1 || (colCount !! (fromJust action) -1) < 0
         then  -- error; redo
            person_play game (ContinueGame state) tournament_state
         else
-           person_play game (game 'X' (Action act) state) tournament_state
+           person_play game (game 'X' ((fromJust action) -1) state) tournament_state
 
 
 -- play connect4 (ContinueGame connect4_start) (0,0,0)
