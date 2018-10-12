@@ -79,7 +79,7 @@ checkConsecutive board player num x y fi fj gi gj =
 
 checkHelper :: GameBoard -> Char -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> Int -> Int
 checkHelper board player i j fi fj acc
-    | i > 5 || j > 6 || i < 0 || j < 0 || (row !! j /= player) = acc
+    | (isOutOfBound i j) || (row !! j /= player) = acc
     | otherwise = checkHelper board player (fi i) (fj j) fi fj (acc+1) 
     where row = board !! i
 
@@ -89,7 +89,21 @@ computer :: Opponent
 -- this player has an ordering of the moves, and chooses the first one available
 computer state player_move = 6
 
+checkStringHelper :: GameBoard -> Int -> Int -> Int -> (Int -> Int) -> (Int -> Int) -> [Char] -> [Char]
+checkStringHelper board count i j fi fj acc
+    | (count == 8) = acc
+    | isOutOfBound i j = checkStringHelper board (count+1) (fi i) (fj j) fi fj acc
+    | otherwise = checkStringHelper board (count+1) (fi i) (fj j) fi fj ([(board !! i !! j)] ++ acc)
 
+isOutOfBound :: Int -> Int -> Bool
+isOutOfBound i j = i > 5 || j > 6 || i < 0 || j < 0
+
+test_board = [ ['*', '*', '*', '*', '*', '*', '*'], 
+    ['*', '*', '*', '*', 'X', '*', '*'],
+    ['*', '*', '*', 'X', '*', '*', '*'],
+    ['*', '*', 'X', '*', '*', '*', '*'],
+    ['*', 'X', '*', '*', '*', '*', '*'],
+    ['*', '*', '*', '*', '*', '*', '*']]
 
 -- win tests
 false_start = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
@@ -140,3 +154,5 @@ true_diag_up = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'],
      ['*', '*', 'X', '*', '*', '*', '*'],
      ['*', 'X', '*', '*', '*', '*', '*'],
      ['*', '*', '*', '*', '*', '*', '*']] (2, 3)
+
+
