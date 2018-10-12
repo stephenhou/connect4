@@ -16,6 +16,8 @@ type Game = Player -> Int -> State -> Result
 
 type Player = Char
 
+type ComputerPlayer = State -> Int
+
 --type Player = State -> Action
 
 ------ The Connect4 Sum Game -------
@@ -80,6 +82,8 @@ checkHelper board player i j fi fj acc
     | otherwise = checkHelper board player (fi i) (fj j) fi fj (acc+1) 
     where row = board !! i
 
+simple_player :: ComputerPlayer
+simple_player state = 6
 
 -- win tests
 false_start = MoveRes [ ['*', '*', '*', '*', '*', '*', '*'], 
