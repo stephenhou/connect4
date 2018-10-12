@@ -12,7 +12,7 @@ data Result = EndOfGame Char State    -- end of game, value, starting state
             | ContinueGame State        -- continue with new state
          deriving (Eq)
 
-type Game = Player -> Action -> State -> Result
+type Game = Player -> Int -> State -> Result
 
 type Player = Char
 
@@ -20,19 +20,11 @@ type Player = Char
 
 ------ The Connect4 Sum Game -------
 
-newtype Action = Action Int                          -- a move for a player
-         deriving (Ord,Eq)
-
 data MoveRes = MoveRes GameBoard (Int, Int)
 type GameBoard = [[Char]]   -- (self,other)
 
-instance Show Action where
-    show (Action i) = show i
-instance Read Action where
-    readsPrec i st =  [(Action a,rst) | (a,rst) <- readsPrec i st]
-
 connect4 :: Game
-connect4 player (Action move) (State board colPos)
+connect4 player  move (State board colPos)
     | win (MoveRes newBoard (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
     | isBoardFull newBoard                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
     | otherwise                                          =
