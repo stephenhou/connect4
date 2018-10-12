@@ -12,9 +12,10 @@ data Result = EndOfGame Char State    -- end of game, value, starting state
             | ContinueGame State        -- continue with new state
          deriving (Eq)
 
-type Game = Player -> Action -> State -> Result
+type Game = Player -> Int -> State -> Result
 
 type Player = Char
+type Opponent = State -> Int -> Int
 
 --type Player = State -> Action
 
@@ -79,6 +80,13 @@ checkHelper board player i j fi fj acc
     | i > 5 || j > 6 || i < 0 || j < 0 || (row !! j /= player) = acc
     | otherwise = checkHelper board player (fi i) (fj j) fi fj (acc+1) 
     where row = board !! i
+
+------- Computer Opponent -------
+
+computer :: Opponent
+-- this player has an ordering of the moves, and chooses the first one available
+computer state player_move = 0
+
 
 
 -- win tests
