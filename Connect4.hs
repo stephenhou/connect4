@@ -14,8 +14,6 @@ data Result = EndOfGame Char State    -- end of game, value, starting state
 
 type Game = Player -> Action -> State -> Result
 
-type ColCount = [Int]
-
 type Player = Char
 
 --type Player = State -> Action
