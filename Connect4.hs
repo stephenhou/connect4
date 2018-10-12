@@ -14,8 +14,6 @@ data Result = EndOfGame Char State    -- end of game, value, starting state
 
 type Game = Player -> Action -> State -> Result
 
-type ColCount = [Int]
-
 type Player = Char
 
 --type Player = State -> Action
@@ -35,8 +33,8 @@ instance Read Action where
 
 connect4 :: Game
 connect4 player (Action move) (State board colPos)
-    | win (MoveRes board (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
-    | isBoardFull board                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
+    | win (MoveRes newBoard (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
+    | isBoardFull newBoard                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
     | otherwise                                          =
           ContinueGame (State newBoard newColCount)
     where (State newBoard newColCount) = updateBoard player move (State board colPos)
@@ -44,7 +42,7 @@ connect4 player (Action move) (State board colPos)
 updateBoard :: Player -> Int -> State -> State
 updateBoard player x (State board colPos) =
     let y = colPos !! x
-        rowToUpdate = board !! x
+        rowToUpdate = board !! y
         updatedColCount = replaceNth x (y-1) colPos
         updatedRow = replaceNth x player rowToUpdate
         updatedBoard = replaceNth y updatedRow board
@@ -66,12 +64,12 @@ replaceNth n newVal (x:xs)
    | otherwise = x:replaceNth (n-1) newVal xs
 
 
-connect4_start = State [ ['*', '*', '*', '*', '*', '*', '*'], 
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*'],
-                         ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
+connect4_start = State [['*', '*', '*', '*', '*', '*', '*'], 
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*'],
+                        ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
 
 win :: MoveRes -> Char -> Bool
 win (MoveRes board (i, j)) player =
