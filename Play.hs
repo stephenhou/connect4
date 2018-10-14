@@ -50,7 +50,7 @@ person_play game (ContinueGame state) tournament_state prevCompMove opponent =
       putStrLn (printArray gameBoard)
       line <- getLine
       let action = (readMaybe line :: Maybe Int)
-      if (action == Nothing) || ((fromJust action)-1) > length(colCount) || (colCount !! ((fromJust action)-1)) < 0
+      if (action == Nothing) || ((fromJust action)-1) > length(colCount) || ((fromJust action)-1) < 0 || (colCount !! ((fromJust action)-1)) < 0
         then  -- error; redo
            person_play game (ContinueGame state) tournament_state prevCompMove opponent
         else
