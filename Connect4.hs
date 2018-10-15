@@ -92,13 +92,26 @@ isOutOfBound i j = i > 5 || j > 6 || i < 0 || j < 0
 
 computer :: Opponent
 -- this player has an ordering of the moves, and chooses the first one available
-computer state playerMove prevMove = 
+computer (State gb cols) playerMove prevMove = 
     let offset = if prevMove == playerMove then 1 else 0
-        winningMove = if prevMove /= -1 then findMandatoryMove state prevMove 'O' offset else (-1)
-        nextMove = if playerMove /= -1 then findMandatoryMove state playerMove 'X' 0 else (-1)
+        winningMove = if prevMove /= -1 then findMandatoryMove (State gb cols) prevMove 'O' offset else (-1)
+        nextMove = if playerMove /= -1 then findMandatoryMove (State gb cols) playerMove 'X' 0 else (-1)
+        compMove = computerMove cols playerMove prevMove
     in if winningMove /= -1 then winningMove
          else if nextMove /= -1 then nextMove
-         else 6 -- TODO: implement regular circumstance placement strategy
+         else if (cols !! compMove) < 0 then findOpenSpot cols 0 else 0
+
+computerMove :: [Int] -> Int -> Int -> Int
+-- this handles the more complex move finding for the computer
+computerMove cols playerMove prevMove = 
+    if playerMove == -1 
+        then myRand 0 6
+        else myRand (max (playerMove - 1) 0) (min (playerMove + 1) 6)
+
+--myRand lo high = randomR (lo,high) (mkStdGen 66)
+
+findOpenSpot (h:t) counter = 
+    if h > 0 then counter else findOpenSpot t (counter +1)
 
 -- can be used to find the winning move for the computer
 -- OR
