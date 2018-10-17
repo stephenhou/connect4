@@ -25,6 +25,10 @@ data MoveRes = MoveRes GameBoard (Int, Int)
 type GameBoard = [[Char]]   -- (self,other)
 
 connect4 :: Game
+-- Takes a Player -> Int -> State -> Result 
+-- Checks if anyone has won
+-- if no one has won, then we check if its a tie(meaning that the board is full and no one has won)
+-- if none of those two on top has happened then we continue the game
 connect4 player  move (State board colPos)
     | win (MoveRes newBoard (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
     | isBoardFull newColCount                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
@@ -32,6 +36,7 @@ connect4 player  move (State board colPos)
           ContinueGame (State newBoard newColCount)
     where (State newBoard newColCount) = updateBoard player move (State board colPos)
 
+-- Updates the board with the move
 updateBoard :: Player -> Int -> State -> State
 updateBoard player x (State board colPos) =
     let y = colPos !! x
@@ -41,16 +46,13 @@ updateBoard player x (State board colPos) =
         updatedBoard = replaceNth y updatedRow board
     in (State updatedBoard updatedColCount)
 
+-- Given the cols we check if all the cols are full
 isBoardFull :: [Int] -> Bool
 isBoardFull [] = True
 isBoardFull (r : rest) = if r > 0 then False else isBoardFull(rest)
 
-rowHasSpot :: [Char] -> Bool
-rowHasSpot [] = True
-rowHasSpot (p : rest)
-    | p == '*' = False
-    | otherwise = rowHasSpot(rest)
-
+--Takes n - the value to be replaced and newVal the val that we will be replacing with and the array
+-- and replaces n with newVal in the array
 replaceNth _ _ [] = []
 replaceNth n newVal (x:xs)
    | n == 0 = newVal:xs
