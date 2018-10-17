@@ -97,6 +97,8 @@ computer (State gb cols) playerMove prevMove =
         compMove = computerMove cols playerMove prevMove
     in if winningMove /= -1 then winningMove
          else if nextMove /= -1 then nextMove
+         else if compMove < 0 then 0
+         else if compMove > 6 then 6 
          else if (cols !! compMove) < 0 then findOpenSpot cols 0 else compMove
 
 computerMove :: [Int] -> Int -> Int -> Int
@@ -104,7 +106,7 @@ computerMove :: [Int] -> Int -> Int -> Int
 computerMove cols playerMove prevMove = 
     if playerMove == -1 
         then 3
-        else if (cols !! (playerMove)) -1  == (cols !! (max 0 (playerMove -1))) && (cols !! (playerMove -1)) == (cols !! (min 6 (playerMove  + 1)))
+        else if (cols !! (playerMove)) -1  == (cols !! (max 0 (playerMove -1))) && (cols !! (max 0 (playerMove -1))) == (cols !! (min 6 (playerMove  + 1)))
                 then playerMove
                 else if (cols !! (max 0 (playerMove - 1))) > (cols !! (min 6 (playerMove + 1)))
                     then playerMove - 1
