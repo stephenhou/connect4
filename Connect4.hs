@@ -58,7 +58,7 @@ replaceNth n newVal (x:xs)
    | n == 0 = newVal:xs
    | otherwise = x:replaceNth (n-1) newVal xs
 
-
+-- the starting state for every connect4 game
 connect4_start = State [['*', '*', '*', '*', '*', '*', '*'], 
                         ['*', '*', '*', '*', '*', '*', '*'],
                         ['*', '*', '*', '*', '*', '*', '*'],
@@ -66,6 +66,7 @@ connect4_start = State [['*', '*', '*', '*', '*', '*', '*'],
                         ['*', '*', '*', '*', '*', '*', '*'],
                         ['*', '*', '*', '*', '*', '*', '*']] [5,5,5,5,5,5,5]
 
+-- checks if a player has won
 win :: MoveRes -> Char -> Bool
 win (MoveRes board (i, j)) player =
     (checkConsecutive board player 4 i j (\ i -> i) (\ j -> j+1) (\ i -> i) (\j -> j-1)) ||     -- check horizontal
@@ -156,6 +157,7 @@ checkNextInCheckStr player checkStr pos len checksLeft
     | otherwise = currCheck && checkNextInCheckStr player checkStr (pos+1) len (checksLeft-1)
     where currCheck = ((checkStr !! pos) == player)
 
+-- checks for wins in the vertical direction
 vertWin :: State -> Int -> Char -> Bool
 vertWin (State board colPos) playerMove player = 
     let lastRow = ((colPos !! playerMove)+1)
