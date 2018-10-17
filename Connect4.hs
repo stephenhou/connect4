@@ -27,7 +27,7 @@ type GameBoard = [[Char]]   -- (self,other)
 connect4 :: Game
 connect4 player  move (State board colPos)
     | win (MoveRes newBoard (colPos !! move, move))  player = EndOfGame player connect4_start   -- agent wins
-    | isBoardFull newBoard                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
+    | isBoardFull newColCount                                  = EndOfGame 't'    connect4_start     -- no more moves, draw
     | otherwise                                          =
           ContinueGame (State newBoard newColCount)
     where (State newBoard newColCount) = updateBoard player move (State board colPos)
@@ -41,9 +41,9 @@ updateBoard player x (State board colPos) =
         updatedBoard = replaceNth y updatedRow board
     in (State updatedBoard updatedColCount)
 
-isBoardFull :: GameBoard -> Bool
-isBoardFull [] = False
-isBoardFull (r : rest) = rowHasSpot(r) || isBoardFull(rest)
+isBoardFull :: [Int] -> Bool
+isBoardFull [] = True
+isBoardFull (r : rest) = if r > 0 then False else isBoardFull(rest)
 
 rowHasSpot :: [Char] -> Bool
 rowHasSpot [] = True
